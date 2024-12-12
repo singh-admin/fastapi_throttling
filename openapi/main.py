@@ -15,7 +15,7 @@ tags_metadata = [
     }
 ]
 
-app = FastAPI(title="FastApi Throttling", openapi_tags=tags_metadata)
+app = FastAPI(title="FastApi Throttling", root_path="/api", openapi_tags=tags_metadata)
 
 # Register a new account.
 @app.post("/register",
@@ -27,7 +27,7 @@ response_model=schemas.UserResponse,
         }
     }, tags=["Registration + Throttling Handling"]
 )
-def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
+async def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     # verify the existing Email.
     existing_user = db.query(models.User).filter(models.User.email == user.email).first()
     if existing_user:
@@ -57,7 +57,7 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
         },
     }, tags=["Registration + Throttling Handling"]
 )
-def login(user: schemas.UserCreate, db: Session = Depends(get_db)):
+async def login(user: schemas.UserCreate, db: Session = Depends(get_db)):
     # Check for throttling
     if throttling.is_throttled(user.email):
         raise HTTPException(
